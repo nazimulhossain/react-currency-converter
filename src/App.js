@@ -1,26 +1,43 @@
 import { useEffect, useState } from 'react';
 
 function App() {
-  const [input, setInput] = useState(10);
+  const [input, setInput] = useState(0);
   const [currencyFrom, setCurrencyFrom] = useState('USD');
   const [currencyTo, setCurrencyTo] = useState('INR');
   const [output, setOutput] = useState(0);
 
-  // `https://api.frankfurter.app/latest?amount=100&from=EUR&to=USD`
 
   useEffect(() => {
-    console.log('Hello from Effect');
+  
     const fetchCurrency = async () => {
-      const res = await fetch(
-        `https://api.frankfurter.app/latest?amount=${input}&from=${currencyFrom}&to=${currencyTo}`
-      );
-      const data = await res.json();
-      setOutput((output) => Object.values(data.rates)[0]);
-    };
+      try{
+        const res = await fetch(
+          `https://api.frankfurter.app/latest?amount=${input}&from=${currencyFrom}&to=${currencyTo}`
+        );
+        if(!res.ok) throw new Error("Something wrong with data fetching");
+        const data = await res.json();
+        setOutput(data.rates[currencyTo]);
+      }
+      catch(err){
+        console.log(err);
+      }
+
+     
+    }
+   
+    if(currencyFrom === currencyTo) {
+      setOutput(input);
+      return;
+    }
 
     if (input > 0) {
       fetchCurrency();
     }
+
+    
+
+
+   
   }, [input, currencyFrom, currencyTo]);
   return (
     <div className="container">
@@ -28,7 +45,7 @@ function App() {
       <input
         type="text"
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => setInput(Number(e.target.value))}
       />
       <select
         value={currencyFrom}
@@ -49,7 +66,7 @@ function App() {
         <option value="CAD">CAD</option>
         <option value="INR">INR</option>
       </select>
-      <p>{output}</p>
+      <p style={{fontWeight:'bold'}}>{input!=='' ? output : ''} {currencyTo}</p>
     </div>
   );
 }
